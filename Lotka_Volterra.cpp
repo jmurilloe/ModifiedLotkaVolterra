@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <boost/math/distributions/beta.hpp>
 
 int N_i = 0;    //Número de especies de plantas
 int N_j = 0;    //Número de especies animales
