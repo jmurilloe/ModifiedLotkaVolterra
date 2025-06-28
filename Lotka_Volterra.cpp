@@ -21,6 +21,9 @@ void parameters(int N_i, int N_j, state &y);    //Inicialización de parámetros
 void equations(const state &y, state &dydt);    //Función para escribir las ecuaciones de Lotka-Volterra
 void RK4(state &y, double dt, double t_max);    //Implementación de Runge-Kutta de orden 4
 
+std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, const std::vector<double> &FiF, const std::vector<double> &AjF, const std::vector<std::vector<double>> &betaF);
+                                                //Función que crea la matriz de visitas para calcular specialization, nestedness y modularization
+
 int main(int argc, char **argv) {
 
     N_i = std::atoi(argv[1]);
@@ -187,4 +190,15 @@ void RK4(state &y, double dt, double t_max){
             y[i] += (dt/6.0) * (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]); 
         }
     }
+}
+
+std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, const std::vector<double> &FiF, const std::vector<double> &AjF, const std::vector<std::vector<double>> &betaF){
+    std::vector<std::vector<double>> c;
+    c.resize(N_i, std::vector<double>(N_j));
+    for (int i = 0; i < N_i; ++i) {
+        for (int j = 0; j < N_j; ++j) {
+            c[i][j] = betaF[i][j]*FiF[i]*AjF[j];
+        } 
+    }
+    return c;
 }
