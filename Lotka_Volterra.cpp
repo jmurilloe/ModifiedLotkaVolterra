@@ -23,6 +23,11 @@ void RK4(state &y, double dt, double t_max);    //Implementación de Runge-Kutta
 
 std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, const std::vector<double> &FiF, const std::vector<double> &AjF, const std::vector<std::vector<double>> &betaF);
                                                 //Función que crea la matriz de visitas para calcular specialization, nestedness y modularization
+double calculate_H2(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V);
+                                                //Función para calcular specialization
+double calculate_total_interactions(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V);
+                                                //Función para calcular numero total de interacciones de la matriz de visita
+
 
 int main(int argc, char **argv) {
 
@@ -201,4 +206,32 @@ std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const in
         } 
     }
     return c;
+}
+
+double calculate_H2(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V){
+    double m = calculate_total_interactions(N_i, N_j, V);
+    std::vector<std::vector<double>> p;
+    p.resize(N_i, std::vector<double>(N_j));
+    for (int i = 0; i < N_i; ++i) {
+        for (int j = 0; j < N_j; ++j) {
+            p[i][j] = V[i][j]/m;
+        } 
+    }
+    double H2 = 0.0;
+    for (int i = 0; i < N_i; ++i) {
+        for (int j = 0; j < N_j; ++j) {
+            H2 -= p[i][j]*std::log(p[i][j]);
+        }
+    }
+    return H2;
+}
+
+double calculate_total_interactions(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V){
+    double m = 0.0;
+    for (int i = 0; i < N_i; ++i) {
+        for (int j = 0; j < N_j; ++j) {
+            m += V[i][j]; 
+        } 
+    }
+    return m;
 }
