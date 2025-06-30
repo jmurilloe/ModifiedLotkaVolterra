@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 #include <boost/math/distributions/beta.hpp>
+#include <RInside.h> // Necesario para incrustar R
 
 int N_i = 0;    //Número de especies de plantas
 int N_j = 0;    //Número de especies animales
@@ -27,7 +28,8 @@ double calculate_H2(const int &N_i, const int &N_j, const std::vector<std::vecto
                                                 //Función para calcular specialization
 double calculate_total_interactions(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V);
                                                 //Función para calcular numero total de interacciones de la matriz de visita
-
+int print_matrix(std::vector<std::vector<int>> const & matrix, int const L);
+                                                // Funcion que imprime la matriz V
 
 int main(int argc, char **argv) {
 
@@ -234,4 +236,14 @@ double calculate_total_interactions(const int &N_i, const int &N_j, const std::v
         } 
     }
     return m;
+}
+
+int print_matrix(const int &N_i, const int &N_j,std::vector<std::vector<int>> const &matrix){
+    for(int i = 0; i < N_i; ++i) {
+        for(int j = 0; j < N_j; ++j) {
+            std::cout << matrix[i][j]   << "\t";
+        }
+        std::cout << std::endl;
+    }
+    return 1;
 }
