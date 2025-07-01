@@ -21,7 +21,7 @@ void parameters(int N_i, int N_j, state &y);    //Inicialización de parámetros
 void equations(const state &y, state &dydt);    //Función para escribir las ecuaciones de Lotka-Volterra
 void RK4(state &y, double dt, double t_max);    //Implementación de Runge-Kutta de orden 4
 
-std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, const std::vector<double> &FiF, const std::vector<double> &AjF, const std::vector<std::vector<double>> &betaF);
+std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, state &y);
                                                 //Función que crea la matriz de visitas para calcular specialization, nestedness y modularization
 double calculate_H2(const int &N_i, const int &N_j, const std::vector<std::vector<double>> &V);
                                                 //Función para calcular specialization
@@ -41,16 +41,15 @@ int main(int argc, char **argv) {
 
     parameters(N_i, N_j, y);
 
-    std::cout << "# t\t";
-for (int i = 1; i <= N_i; ++i) std::cout << "P" << i << "\t";
-    for (int j = 1; j <= N_j; ++j) std::cout << "A" << j << "\t";
-    for (int i = 1; i <= N_i; ++i) std::cout << "F" << i << "\t";
-    for (int i = 1; i <= N_i; ++i)
-        for (int j = 1; j <= N_j; ++j)
-            std::cout << "beta" << i << j << "\t";
-    std::cout << "\n";
+    RK4(y, 0.01, 15000);
 
-    RK4(y, 0.2, 15000);  
+    for(int i = 0; i < N_i; i++){
+        for(int j = 0; j < N_j; j++)
+            if(j == N_j-1)
+            std::cout << make_visitation_matrix(N_i, N_j, y)[i][j];
+            else std::cout << make_visitation_matrix(N_i, N_j, y)[i][j] << " ";
+        std::cout << "\n";
+    }
 
     return 0;
 }
@@ -166,12 +165,7 @@ void RK4(state &y, double dt, double t_max){
     state k1, k2, k3, k4, y_temp(y.size());
     
     for(double t = 0.0; t < t_max; t += dt){
-        std::cout << t; 
-        
-        for(double values : y){
-            std::cout << "\t" << values;
-        }
-        std::cout << "\n";
+
         equations(y, k1);
         
         for(int i = 0; i < y.size(); i++){
@@ -195,12 +189,12 @@ void RK4(state &y, double dt, double t_max){
     }
 }
 
-std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, const std::vector<double> &FiF, const std::vector<double> &AjF, const std::vector<std::vector<double>> &betaF){
+std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, state &y){
     std::vector<std::vector<double>> c;
     c.resize(N_i, std::vector<double>(N_j));
     for (int i = 0; i < N_i; ++i) {
         for (int j = 0; j < N_j; ++j) {
-            c[i][j] = betaF[i][j]*FiF[i]*AjF[j];
+            c[i][j] = y[idx_beta(i, j)] * y[idx_F(i)] * y[idx_A(j)];
         } 
     }
     return c;
