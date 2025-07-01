@@ -1,44 +1,35 @@
-// my_matrices.cpp (or directly in R using Rcpp::cppFunction)
-#include <Rcpp.h>
-#include <vector> // For your std::vector<std::vector<double>>
+// my_r_app.cpp
+#include <RInside.h> // Necessary for embedding R
+#include <Rcpp.h> // Necessary for embedding R
+#include <iostream>  // For std::cout
+#include <string>    // For std::string (good practice to include explicitly)
 
+// You might have other functions defined here, e.g.:
 // [[Rcpp::export]]
-Rcpp::NumericMatrix createAndReturnMatrix() {
-  // Example: Create a C++ matrix and convert to Rcpp::NumericMatrix
-  std::vector<std::vector<double>> cpp_matrix = {
-    {100, 90, 80},
-    {90, 80, 70},
-    {80, 70, 60}
-  };
+// Rcpp::NumericVector myFunction(Rcpp::NumericVector x) { ... }
 
-  int rows = cpp_matrix.size();
-  int cols = (rows > 0) ? cpp_matrix[0].size() : 0;
+int main(int argc, char *argv[]) { // This is the required main function
 
-  Rcpp::NumericMatrix r_matrix(rows, cols);
+    // Initialize R interpreter
+    RInside R(argc, argv);
 
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < cols; ++j) {
-      r_matrix(i, j) = cpp_matrix[i][j];
-    }
-  }
-  return r_matrix;
-}
+    // --- Your RInside code goes here ---
+    // Example:
+    R.parseEvalQ("my_r_vector <- c(1.0, 2.0, 3.0, 4.0, 5.0)");
 
-// [[Rcpp::export]]
-Rcpp::List createAndReturnManyMatrices() {
-  Rcpp::List matrix_list;
+    // FIX 1: Use Rcpp::as<std::string>(...) for the string conversion
+    // You need to explicitly convert the R object returned by parseEval
+    // before using it with std::cout.
+    std::string vector_str = Rcpp::as<std::string>(R.parseEval("my_r_vector"));
+    std::cout << "Vector R created: my_r_vector = " << vector_str << std::endl;
 
-  for (int k = 0; k < 3; ++k) { // Example: Create 3 matrices
-    int rows = 3;
-    int cols = 3;
-    Rcpp::NumericMatrix current_r_matrix(rows, cols);
 
-    for (int i = 0; i < rows; ++i) {
-      for (int j = 0; j < cols; ++j) {
-        current_r_matrix(i, j) = (double)(i * 10 + j + k * 100); // Example data
-      }
-    }
-    matrix_list.push_back(current_r_matrix, "matrix_" + std::to_string(k)); // Add to list with name
-  }
-  return matrix_list;
+    Rcpp::RObject result = R.parseEval("mean(my_r_vector)");
+
+    // FIX 2: Use Rcpp::as<double>(...) for the double conversion
+    double r_mean = Rcpp::as<double>(result);
+    std::cout << "The mean (calculated in R) is: " << r_mean << std::endl;
+    // --- End of your RInside code ---
+
+    return 0; // Standard exit code for successful execution
 }

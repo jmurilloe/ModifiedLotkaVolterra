@@ -1,19 +1,15 @@
-Bootstrap: docker
-From: ubuntu:22.04
-Stage: spython-base
-
-%post
 # Use a recent, stable Ubuntu Long-Term Support (LTS) release as the base image.
+FROM ubuntu:22.04
 
 # Set the DEBIAN_FRONTEND environment variable to noninteractive.
 # This prevents package managers like apt from prompting for user input during installation,
 # which is essential for automated builds.
-DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Chain all commands into a single RUN instruction to reduce the number of layers in the Docker image.
 # This helps to keep the final image size smaller.
-\
-# 1. Set the timezone to prevent interactive tzdata prompts.
+RUN \
+    # 1. Set the timezone to prevent interactive tzdata prompts.
     # This is a common requirement in automated Docker builds.
     ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime && echo "Etc/UTC" > /etc/timezone && \
     \
@@ -48,13 +44,7 @@ DEBIAN_FRONTEND=noninteractive
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-Rscript -e "install.packages(c('bipartite', 'Rcpp', 'RInside'), repos = 'https://www.icesi.edu.co/CRAN/')"
+RUN Rscript -e "install.packages(c('bipartite', 'Rcpp', 'RInside'), repos = 'https://www.icesi.edu.co/CRAN/')"
 # You can optionally set a default command, but for creating a base .sif file,
 # it's often not necessary. If you did, it might look like this:
 # CMD ["R"]
-%environment
-export DEBIAN_FRONTEND=noninteractive
-%runscript
-exec /bin/bash "$@"
-%startscript
-exec /bin/bash "$@"
