@@ -3,7 +3,6 @@
 #include <cmath>
 #include <random>
 #include <boost/math/distributions/beta.hpp>
-#include <fstream>
 
 int N_i = 0;    //Número de especies de plantas
 int N_j = 0;    //Número de especies animales
@@ -21,7 +20,7 @@ int idx_beta(int i, int j);
 void parameters(int N_i, int N_j, state &y);    //Inicialización de parámetros
 void equations(const state &y, state &dydt);    //Función para escribir las ecuaciones de Lotka-Volterra
 void RK4(state &y, double dt, double t_max);    //Implementación de Runge-Kutta de orden 4
-void save_features_to_file(const std::string &filename, const state &y);    //Guarda los promedios en features.txt
+void features(const state &y);    //Guarda los promedios en features.txt
 
 std::vector<std::vector<double>> make_visitation_matrix(const int &N_i, const int &N_j, state &y);
                                                 //Función que crea la matriz de visitas para calcular specialization, nestedness y modularization
@@ -45,6 +44,8 @@ int main(int argc, char **argv) {
 
     RK4(y, 0.01, 15000);
 
+    features(y);
+
     std::vector<std::vector<double>> V = make_visitation_matrix(N_i, N_j, y);
 
     for(int i = 0; i < N_i; i++){
@@ -54,8 +55,6 @@ int main(int argc, char **argv) {
             else std::cout << V[i][j] << " ";
         std::cout << "\n";
     }
-
-    save_features_to_file("features.txt", y);
 
     return 0;
 }
@@ -244,7 +243,7 @@ int print_matrix(const int &N_i, const int &N_j,std::vector<std::vector<int>> co
     return 1;
 }
 
-void save_features_to_file(const std::string &filename, const state &y) {
+void features(const state &y) {
     double A_sum = 0.0;
     double F_sum = 0.0;
 
@@ -256,8 +255,6 @@ void save_features_to_file(const std::string &filename, const state &y) {
     double A_mean = A_sum / N_j;
     double F_mean = F_sum / N_i;
 
-    std::ofstream fout(filename);
-    fout << A_mean << " " << F_mean << "\n";
-    fout.close();
+    std::cout << A_mean << " " << F_mean << "\n";
 }
 
