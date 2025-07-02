@@ -33,12 +33,5 @@ let N_j=N_j_min+j_idx
 out_dir="results_base/${N_i}_${N_j}"
 mkdir -p "$out_dir"
 
-# Ejecutar simulación y guardar matriz V
-./bin/V_Lotka_Volterra.x $N_i $N_j > "$out_dir/V${rep}.txt"
-
-# Mover features.txt generado por el ejecutable a su nombre correcto
-if [ -f features.txt ]; then
-    mv features.txt "$out_dir/features${rep}.txt"
-else
-    echo "❌ No se encontró features.txt para N_i=${N_i}, N_j=${N_j}, rep=${rep}" >&2
-fi
+# Ejecutar simulación y guardar features y matriz V
+./bin/V_Lotka_Volterra.x $N_i $N_j > "$out_dir/rep${rep}.txt"

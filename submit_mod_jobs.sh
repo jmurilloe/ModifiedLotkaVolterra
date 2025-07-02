@@ -6,7 +6,7 @@ N_j_min=13
 N_j_max=30
 reps=5
 
-mkdir -p slurm_out_mod
+mkdir -p slurm_out_mod results_low results_medium results_high
 
 for ((N_i=N_i_min; N_i<=N_i_max; N_i++)); do
   for ((N_j=N_j_min; N_j<=N_j_max; N_j++)); do
@@ -25,19 +25,19 @@ for ((N_i=N_i_min; N_i<=N_i_max; N_i++)); do
       sbatch --job-name=mod_${N_i}${N_j}${rep}_low --partition=16threads --mem=1G --time=00:30:00 \
         --output=slurm_out_mod/out_${N_i}${N_j}${rep}_low.txt \
         --error=slurm_out_mod/err_${N_i}${N_j}${rep}_low.txt \
-        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_low > $outdir_low/V${rep}.txt && mv features.txt $outdir_low/features${rep}.txt'"
+        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_low > $outdir_low/rep${rep}.txt'"
 
       # --- MEDIUM ---
       sbatch --job-name=mod_${N_i}${N_j}${rep}_med --partition=16threads --mem=1G --time=00:30:00 \
         --output=slurm_out_mod/out_${N_i}${N_j}${rep}_med.txt \
         --error=slurm_out_mod/err_${N_i}${N_j}${rep}_med.txt \
-        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_med > $outdir_med/V${rep}.txt && mv features.txt $outdir_med/features${rep}.txt'"
+        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_med > $outdir_med/rep${rep}.txt'"
 
       # --- HIGH ---
       sbatch --job-name=mod_${N_i}${N_j}${rep}_high --partition=16threads --mem=1G --time=00:30:00 \
         --output=slurm_out_mod/out_${N_i}${N_j}${rep}_high.txt \
         --error=slurm_out_mod/err_${N_i}${N_j}${rep}_high.txt \
-        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_high > $outdir_high/V${rep}.txt && mv features.txt $outdir_high/features${rep}.txt'"
+        --wrap="bash -c './bin/V_Lotka_Volterra_modified.x $N_i $N_j $N_m_high > $outdir_high/rep${rep}.txt'"
 
     done
   done
