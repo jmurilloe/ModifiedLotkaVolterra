@@ -24,22 +24,14 @@ vF <- numeric(rep_max + 1)
 # Leer archivos y calcular métricas
 for (rep in 0:rep_max) {
   repcharac <- as.character(rep)
-  
   repname <- file.path(paste0("results_", study), paste0(N_i, "_", N_j), paste0("rep", repcharac, ".txt"))
-
-  # Leer todas las líneas del archivo
-  lines <- readLines(paste0(repname,"rep",rep,".txt"))
-
-  # Extraer la primera línea y convertirla en vector numérico
+  lines <- suppressWarnings(readLines(repname))
   features <- as.numeric(strsplit(lines[1], "\\s+")[[1]])
-
-  # Extraer el resto de las líneas y convertirlas en una matriz
   rest_lines <- lines[-1]
   V <- do.call(rbind, lapply(rest_lines, function(x) as.numeric(strsplit(x, "\\s+")[[1]])))
+  ncol_V <- length(features)
+  V <- matrix(unlist(V), ncol = ncol_V, byrow = TRUE)
 
-  # Convertir en matriz (por si do.call da como resultado una lista en casos raros)
-  V <- matrix(unlist(matrix_data), ncol)
-  
   vH2[rep + 1] <- H2fun(V, H2_integer = FALSE)[1]
   vmod[rep + 1] <- computeModules(V)@likelihood
   vnodf[rep + 1] <- nested(V, method = "WNODA") / 100
