@@ -43,11 +43,13 @@ int main(int argc, char **argv) {
 
     RK4(y, 0.01, 15000);
 
+    std::vector<std::vector<double>> V = make_visitation_matrix(N_i, N_j, y);
+
     for(int i = 0; i < N_i; i++){
         for(int j = 0; j < N_j; j++)
             if(j == N_j-1)
-            std::cout << make_visitation_matrix(N_i, N_j, y)[i][j];
-            else std::cout << make_visitation_matrix(N_i, N_j, y)[i][j] << " ";
+            std::cout << V[i][j];
+            else std::cout << V[i][j] << " ";
         std::cout << "\n";
     }
 
