@@ -1,34 +1,32 @@
-# Makefile
+# Carpeta de código fuente y salida
+SRC_DIR = modelos
+BIN_DIR = bin
 
-# Obtener las banderas de compilación (headers) de RInside y R/Rcpp.
-# La salida de RInside::CxxFlags() DEBE contener las rutas -I para Rcpp, RInside y R base.
-CPPFLAGS_RINSIDE = -I/usr/local/lib/R/site-library/RInside/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/share/R/include
+# Archivos fuente
+SRC_ORIGINAL = $(SRC_DIR)/V_Lotka_Volterra.cpp
+SRC_MODIFIED = $(SRC_DIR)/V_Lotka_Volterra_modified.cpp
 
-# Obtener las banderas de enlace (librerías) de RInside y R/Rcpp.
-# La salida de RInside::LdFlags() DEBE contener todas las banderas -L y -l
-# necesarias para RInside, Rcpp y las librerías CORE de R (como libR.so, libRmath.so, etc.).
-LDFLAGS_RINSIDE = -L/usr/local/lib/R/site-library/RInside/lib -lRInside -Wl,-rpath,/usr/local/lib/R/site-library/RInside/lib -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro
+# Ejecutables
+OUT_ORIGINAL = $(BIN_DIR)/V_Lotka_Volterra.x
+OUT_MODIFIED = $(BIN_DIR)/V_Lotka_Volterra_modified.x
 
-# Tu compilador C++
+# Bandera de compilación
 CXX = g++
+CXXFLAGS = -O3 -std=c++17 -fsanitize=address,undefined,leak
 
-# CXXFLAGS: Incluye tus rutas de cabecera específicas si son necesarias,
-# PERO asegúrate de que $(CPPFLAGS_RINSIDE) también esté presente para las de R/Rcpp/RInside.
-# Por ejemplo, si tienes Rcpp en una ruta no estándar:
-CXXFLAGS = -Wall $(CPPFLAGS_RINSIDE) 
+# Compilación por defecto
+all: $(OUT_ORIGINAL) $(OUT_MODIFIED)
 
-# LDFLAGS: Esta línea es CRÍTICA para "undefined reference".
-# Debe usar la salida COMPLETA de RInside::LdFlags().
-LDFLAGS = $(LDFLAGS_RINSIDE)
+# Regla para el ejecutable original
+$(OUT_ORIGINAL): $(SRC_ORIGINAL)
+	$(CXX) $(CXXFLAGS) $< -o $@
 
-TARGET = my_r_app
+# Regla para el ejecutable modificado
+$(OUT_MODIFIED): $(SRC_MODIFIED)
+	$(CXX) $(CXXFLAGS) $< -o $@
 
-all: $(TARGET)
-
-$(TARGET): my_r_app.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS) 
-
-# Asegúrate de que esta línea empiece con un TAB
-
+# Limpiar binarios
 clean:
-	rm -f $(TARGET)
+	rm -f $(BIN_DIR)/*.x
+
+.PHONY: all clean
