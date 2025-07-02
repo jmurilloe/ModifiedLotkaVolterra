@@ -1,4 +1,7 @@
-*.x
+/bin/
+/*.o
+*.swp
+*.tmp
 *.gp
 *.png
 a.out
