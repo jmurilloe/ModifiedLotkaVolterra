@@ -6,3 +6,5 @@
 *.png
 a.out
 *.sif
+*.txt
+*.log
