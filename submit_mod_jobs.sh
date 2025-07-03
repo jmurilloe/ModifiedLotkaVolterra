@@ -18,6 +18,7 @@ for ((N_i=N_i_min; N_i<=N_i_max; N_i++)); do
     outdir_low="results_low/${N_i}_${N_j}"
     outdir_med="results_medium/${N_i}_${N_j}"
     outdir_high="results_high/${N_i}_${N_j}"
+    mkdir -p "$outdir_low" "$outdir_med" "$outdir_high"
 
     for ((rep=0; rep<reps; rep++)); do
 
