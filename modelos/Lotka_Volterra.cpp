@@ -50,7 +50,7 @@ for (int i = 1; i <= N_i; ++i) std::cout << "P" << i << "\t";
             std::cout << "beta" << i << j << "\t";
     std::cout << "\n";
 
-    RK4(y, 0.2, 15000);  
+    RK4(y, 0.01, 15000);  
 
     return 0;
 }

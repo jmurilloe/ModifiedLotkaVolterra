@@ -1,57 +1,56 @@
-#!/usr/bin/env Rscript
-
-suppressPackageStartupMessages(library(bipartite))
-
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 3) {
-  stop("Debe especificar: modelo N_i N_j")
+
+if (length(args) < 4) {
+  stop("Uso: Rscript metrics.R archivo.txt N_i N_j salida.txt")
 }
 
-study <- args[1]  # "base", "low", "medium", "high"
-N_i <- args[2]
-N_j <- args[3]
+file_in <- args[1]
+N_i <- as.integer(args[2])
+N_j <- as.integer(args[3])
+file_out <- args[4]
 
-rep_max <- if (study == "base") 9 else 4
+library(bipartite)
 
-# Vectores para guardar métricas por repetición
-vH2 <- numeric(rep_max + 1) 
-vmod <- numeric(rep_max + 1) 
-vnodf <- numeric(rep_max + 1) 
-vconnect <- numeric(rep_max + 1) 
-vA <- numeric(rep_max + 1) 
-vF <- numeric(rep_max + 1)  
-
-# Leer archivos y calcular métricas
-for (rep in 0:rep_max) {
-  repcharac <- as.character(rep)
-  repname <- file.path(paste0("results_", study), paste0(N_i, "_", N_j), paste0("rep", repcharac, ".txt"))
-  lines <- suppressWarnings(readLines(repname))
-  features <- as.numeric(strsplit(lines[1], "\\s+")[[1]])
-  rest_lines <- lines[-1]
-  V <- do.call(rbind, lapply(rest_lines, function(x) as.numeric(strsplit(x, "\\s+")[[1]])))
-  ncol_V <- length(features)
-  V <- matrix(unlist(V), ncol = ncol_V, byrow = TRUE)
-
-  vH2[rep + 1] <- H2fun(V, H2_integer = FALSE)[1]
-  vmod[rep + 1] <- computeModules(V)@likelihood
-  vnodf[rep + 1] <- nested(V, method = "WNODA") / 100
-  vconnect[rep + 1] <- networklevel(V, index = "weighted connectance")
-  vA[rep + 1] <- features[1]
-  vF[rep + 1] <- features[2]
+make_visitation_matrix <- function(Fi, Aj, beta_mat) {
+  outer(Fi, Aj) * beta_mat
 }
 
-# Calcular promedios y desviaciones estándar
-row_result <- c(
-  mean(vH2),    sd(vH2),
-  mean(vmod),   sd(vmod),
-  mean(vnodf),  sd(vnodf),
-  mean(vconnect), sd(vconnect),
-  mean(vA),     sd(vA),
-  mean(vF),     sd(vF),
-  as.numeric(N_i) / as.numeric(N_j)
-)
+calculate_metrics <- function(V) {
+  H2 <- tryCatch(H2fun(V, H2_integer = FALSE)[1], error = function(e) NA)
+  mod <- tryCatch(computeModules(V)@likelihood, error = function(e) NA)
+  nest <- tryCatch(nested(V, method = "WNODA") / 100, error = function(e) NA)
+  conn <- tryCatch(networklevel(V, index = "weighted connectance"), error = function(e) NA)
+  return(c(H2 = H2, mod = mod, nest = nest, conn = conn))
+}
 
-# Guardar en archivo
-dir_out <- file.path(paste0("results_", study), paste0(N_i, "_", N_j))
-out_file <- file.path(dir_out, paste0("metrics_", N_i, "_", N_j, ".txt"))
-write(paste(row_result, collapse = " "), file = out_file, append = TRUE)
+# Leer 1 de cada 10000 líneas (1 por segundo en simulación)
+lines <- readLines(file_in)
+header <- lines[1]
+data_lines <- lines[seq(2, length(lines), by = 10000)]
+data <- read.table(text = c(header, data_lines), header = TRUE)
+
+# Columnas
+t_col <- 1
+P_cols <- 2:(1 + N_i)
+A_cols <- (2 + N_i):(1 + N_i + N_j)
+F_cols <- (2 + N_i + N_j):(1 + 2*N_i + N_j)
+beta_cols <- (2 + 2*N_i + N_j):(1 + 2*N_i + N_j + N_i * N_j)
+
+# Inicializar resultados
+result <- data.frame(t = numeric(), H2 = numeric(), mod = numeric(), nest = numeric(), conn = numeric())
+
+for (row in 1:nrow(data)) {
+  t <- data[row, t_col]
+  Fi <- as.numeric(data[row, F_cols])
+  Aj <- as.numeric(data[row, A_cols])
+  beta_vec <- as.numeric(data[row, beta_cols])
+  beta_mat <- matrix(beta_vec, nrow = N_i, ncol = N_j, byrow = TRUE)
+  
+  V <- make_visitation_matrix(Fi, Aj, beta_mat)
+  metrics <- calculate_metrics(V)
+  
+  result[row, ] <- c(t, metrics)
+}
+
+# Guardar en archivo .txt con tabulaciones
+write.table(result, file = file_out, sep = "\t", row.names = FALSE, quote = FALSE)
