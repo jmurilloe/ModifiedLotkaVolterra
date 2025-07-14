@@ -20,6 +20,7 @@ calculate_metrics <- function(V) {
   mod <- tryCatch(computeModules(V)@likelihood, error = function(e) NA)
   nest <- tryCatch(nested(V, method = "WNODA") / 100, error = function(e) NA)
   conn <- tryCatch(networklevel(V, index = "weighted connectance"), error = function(e) NA)
+  Fmean<- tryCatch(mean(V), error = function(e) NA)
   return(c(H2 = H2, mod = mod, nest = nest, conn = conn))
 }
 
@@ -37,11 +38,12 @@ F_cols <- (2 + N_i + N_j):(1 + 2*N_i + N_j)
 beta_cols <- (2 + 2*N_i + N_j):(1 + 2*N_i + N_j + N_i * N_j)
 
 # Inicializar resultados
-result <- data.frame(t = numeric(), H2 = numeric(), mod = numeric(), nest = numeric(), conn = numeric())
+result <- data.frame(t = numeric(), H2 = numeric(), mod = numeric(), nest = numeric(), conn = numeric(), Fmean = numeric())
 
 for (row in 1:nrow(data)) {
   t <- data[row, t_col]
   Fi <- as.numeric(data[row, F_cols])
+  Fmean <- mean(Fi)
   Aj <- as.numeric(data[row, A_cols])
   beta_vec <- as.numeric(data[row, beta_cols])
   beta_mat <- matrix(beta_vec, nrow = N_i, ncol = N_j, byrow = TRUE)
@@ -49,7 +51,7 @@ for (row in 1:nrow(data)) {
   V <- make_visitation_matrix(Fi, Aj, beta_mat)
   metrics <- calculate_metrics(V)
   
-  result[row, ] <- c(t, metrics)
+  result[row, ] <- c(t, metrics, Fmean)
 }
 
 # Guardar en archivo .txt con tabulaciones
